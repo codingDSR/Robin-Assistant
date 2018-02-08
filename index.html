@@ -1,0 +1,223 @@
+<html ng-app="ionicApp">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+
+
+    <title>Ionic Template</title>
+    <link href="https://code.ionicframework.com/nightly/css/ionic.css" rel="stylesheet">
+    <script src="https://code.ionicframework.com/nightly/js/ionic.bundle.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/index.css">
+  </head>
+
+  <body ng-controller="Messages">
+    <ion-nav-view></ion-nav-view>
+
+    <script id="templates/pda-menu.html" type="text/ng-template">
+      <ion-side-menus enable-menu-with-back-views="false">
+
+        <ion-side-menu-content>
+          <ion-nav-bar class="bar-royal">
+            <ion-nav-back-button>
+            </ion-nav-back-button>
+
+            <ion-nav-buttons side="left">
+              <button class="button button-icon button-clear ion-navicon" menu-toggle="left">
+              </button>
+            </ion-nav-buttons>
+          </ion-nav-bar>
+
+          <ion-nav-view name="menuContent"></ion-nav-view>
+        </ion-side-menu-content> 
+
+        <ion-side-menu side="left">
+          <ion-header-bar class="bar-assertive">
+            <h1 class="title">Menu</h1>
+          </ion-header-bar>
+          <ion-content>
+            <ul class="list" style="margin-top: -10px">
+              <!-- Note each link has the 'menu-close' attribute so the menu auto closes when clicking on one of these links -->
+              <a href="#/pda/home" class="item" menu-close>Home</a>
+              <a href="#/pda/pc" class="item" menu-close>PC Control</a>
+              <a href="#/pda/settings" class="item" menu-close>Settings</a>
+            </ul>
+          </ion-content>
+        </ion-side-menu>
+
+      </ion-side-menus>
+    </script>
+
+    <script id="templates/home.html" type="text/ng-template">
+
+      <ion-view title="Robin">
+        <ion-pane class="messaging-view">
+
+          <ion-content class="content-stable"
+                   on-swipe-left="hideTime = false"
+                   on-swipe-right="hideTime = true">
+
+          <div ng-repeat="message in messages"
+             ng-class="{other: message.userId != myId}"
+             class="messages">
+
+            <div ng-if="message.layout == 'basic'" class="message">
+              <span ng-bind-html="message.data"></span>
+            </div>
+            <div ng-if="message.layout == 'card'" class="message sp">
+              <div class="card">
+                <div class="item item-divider item-dark" ng-bind-html="message.data.title">
+                </div>
+                <div class="item item-text-wrap" ng-bind-html="message.data.desc">
+                </div>
+              </div>
+            </div>
+
+            <div ng-if="message.layout == 'grid'" class="message sp">
+              <div class="boxes" style="padding:10px;margin-top:15px;">
+                <div ng-repeat="obj in message.data" class="box" 
+                style="float:left;width:33.33%">
+                  <img src="{{obj.link}}" width="100%" 
+                  style="object-fit:cover;height:130px">
+                </div>
+              </div>
+              <div style="clear:both;"></div>
+            </div>
+
+            <div ng-if="message.layout == 'list'" class="message sp">
+              <div class="list" style="padding:10px;margin-top:15px;">
+                <div ng-repeat="obj in message.data" class="item">
+                  {{obj.displayName}}
+                </div>
+              </div>
+              <div style="clear:both;"></div>
+            </div>
+
+            <ion-slide-box ng-if="message.layout == 'swipenewscard'" class="message sp">
+              <ion-slide ng-repeat="news in message.data.articles">
+                <div class="box">
+                  <div class="list card">
+                    <div class="item" style="background:#333;color:#eee;white-space: initial;">{{news.title}}</div>
+                    <div class="item item-body">
+                      <img class="full-image" width="100%" style="height:170px;object-fit:cover" src="{{news.urlToImage}}">
+                    </div>
+                  </div>
+                </div>
+              </ion-slide>
+            </ion-slide-box>
+
+
+            <ion-slide-box ng-if="message.layout == 'youtubevideos'" class="message ytsnippet sp">
+              <ion-slide ng-repeat="vd in message.data.items">
+                <div class="box">
+                  <iframe style="width:100%;height: 85%;" src="{{vd.id.videoId}}" allowfullscreen></iframe>
+                </div>
+              </ion-slide>
+            </ion-slide-box>
+
+            <div ng-if="message.layout == 'weathercard'" class="message sp">
+              <div class="card">
+                <div class="item item-divider item-dark">
+                  {{message.data.title}}
+                </div>
+                <div class="item item-text-wrap" style="padding: 0px;">
+                  <div class="list">
+                      <div class="item" ng-repeat="(key, value) in message.data.info">
+                        {{key}} 
+                        <span class="badge">{{value}}</span>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div ng-if="message.layout == 'map'" class="message sp">
+              <div style="padding: 10px;margin-top:15px;margin-bottom:10px;" class="map"></div>
+            </div>
+
+            <div ng-if="message.layout == 'camera'" class="message sp">
+              <div style="padding: 10px;margin-top:15px;">
+                <img src="{{message.data}}" style="width:100%;height:360px;object-fit:cover">
+              </div>
+            </div>
+
+            <div ng-if="message.layout == 'pc_list_dir'" class="message sp">
+              <div class="list card directories">
+                <a href="#" ng-repeat="dir in message.data.data.directories" ng-if="dir.length >0" class="item item-icon-left">
+                  <i class="icon ion-ios-folder-outline"></i>
+                  {{dir}}
+                </a>
+              </div>
+            </div>
+        </div>
+        <div id="timer" class="hide"></div>
+      </ion-content>
+
+      <ion-footer-bar keyboard-attach class="bar-stable item-input-inset">
+          <label ng-show="!recognizing" class="item-input-wrapper">
+            <input type="text" placeholder="Type your message" on-return="sendMessage(); closeKeyboard()" ng-model="data.message" on-focus="inputUp()" on-blur="inputDown()" />
+          </label>
+          <button ng-show="!recognizing" class="button button-clear" id="recognizeBtn" ng-click="recognize()">
+            <i class="icon ion-ios-mic-outline"></i>
+          </button>
+        <div ng-show="recognizing" style="width:100%;text-align: center;">
+            <img src="http://www.twimads.com/local/files/games/pregnant-princess-shopping/images/_preloader.gif" height="32px">
+        </div>
+      </ion-footer-bar>
+    </ion-pane>
+    </script>
+
+    <script id="templates/pc.html" type="text/ng-template">
+       <ion-pane style="margin-top:10px" class="messaging-view">
+       <ion-view view-title="PC Control">
+        <ion-content style="top:30px;">
+          <div class="list list-inset">
+            <label class="item item-input">
+              <input type="text" ng-keypress="exec($event)" placeholder="Command">
+            </label>
+          </div>
+
+          <div class="card">
+            <div class="item item-text-wrap" id="Output">
+              {{exout}}
+            </div>
+          </div>
+        </ion-content>
+      </ion-view>
+    </ion-pane>
+    </script>
+
+    <script id="templates/settings.html" type="text/ng-template">
+       <ion-pane style="margin-top:10px" class="messaging-view">
+       <ion-view view-title="Settings" style="top:15px;">
+        <ion-content >
+          <ul class="list">
+            <li class="item item-toggle">
+               Voice
+               <label class="toggle toggle-calm">
+                 <input type="checkbox">
+                 <div class="track">
+                   <div class="handle"></div>
+                 </div>
+               </label>
+            </li>
+          </ul>
+        </ion-content>
+      </ion-view>
+    </ion-pane>
+    </script>
+
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvNyDLoQLmqTNisbUHt9F67g2XfqZbVkU&libraries=places" async defer></script>
+
+    <script type="text/javascript" src="js/p5.js"></script>
+    <script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+
+
+  </body>
+
+</html>

@@ -1,0 +1,216 @@
+! var name     = Bot
+! var age      = 9000
+! var gender   = androgynous
+! var location = Cyberspace
+! var phone    = 555-1234
+! var email    = test@mydomain.com
+! var context = steve+jobs
+
+
+
+
+! sub +         = plus
+! sub -         = minus
+! sub /         = divided
+! sub *         = times
+! sub i'm       = i am
+! sub i'd       = i would
+! sub i've      = i have
+! sub i'll      = i will
+! sub don't     = do not
+! sub isn't     = is not
+! sub you'd     = you would
+! sub you're    = you are
+! sub you've    = you have
+! sub you'll    = you will
+! sub he'd      = he would
+! sub he's      = he is
+! sub he'll     = he will
+! sub she'd     = she would
+! sub she's     = she is
+! sub she'll    = she will
+! sub they'd    = they would
+! sub they're   = they are
+! sub they've   = they have
+! sub they'll   = they will
+! sub we'd      = we would
+! sub we're     = we are
+! sub we've     = we have
+! sub we'll     = we will
+! sub whats     = what is
+! sub what's    = what is
+! sub what're   = what are
+! sub what've   = what have
+! sub what'll   = what will
+! sub can't     = can not
+! sub whos      = who is
+! sub who's     = who is
+! sub who'd     = who would
+! sub who'll    = who will
+! sub don't     = do not
+! sub didn't    = did not
+! sub it's      = it is
+! sub could've  = could have
+! sub couldn't  = could not
+! sub should've = should have
+! sub shouldn't = should not
+! sub would've  = would have
+! sub wouldn't  = would not
+! sub when's    = when is
+! sub when're   = when are
+! sub when'd    = when did
+! sub y         = why
+! sub u         = you
+! sub ur        = your
+! sub r         = are
+! sub im        = i am
+! sub wat       = what
+! sub wats      = what is
+! sub ohh       = oh
+! sub becuse    = because
+! sub becasue   = because
+! sub becuase   = because
+! sub practise  = practice
+! sub its a     = it is a
+! sub fav       = favorite
+! sub fave      = favorite
+! sub iam       = i am
+! sub realy     = really
+! sub iamusing  = i am using
+! sub amleaving = am leaving
+! sub yuo       = you
+! sub youre     = you are
+! sub didnt     = did not
+! sub ain't     = is not
+! sub aint      = is not
+! sub wanna     = want to
+! sub brb       = be right back
+! sub bbl       = be back later
+! sub gtg       = got to go
+! sub g2g       = got to go
+
+// Person substitutions
+! person i am    = you are
+! person you are = I am
+! person i'm     = you're
+! person you're  = I'm
+! person my      = your
+! person your    = my
+! person you     = I
+! person i       = you
+
+
+
+
++ (hi|hello|howdy|hey)
+- {"task":"noprocess","term":"Hello!"}
+- {"task":"noprocess","term":"Hi there!"}
+- {"task":"noprocess","term":"Hey!"}
+- {"task":"noprocess","term":"Hi!"}
+
++ who (is your master|made you|created you|programmed you)
+- {"task":"noprocess","term":"I was developed by a coder; you don't need to know his name!"}
+
++ [*] (fuck|fucker|shit|damn|shut up|bitch) [*]
+- {"task":"noprocess","term":"Does it make you feel strong to use that kind of language?"}
+- {"task":"noprocess","term":"Are you venting your feelings now?"}
+- {"task":"noprocess","term":"Are you angry?"}
+- {"task":"noprocess","term":"Does this topic make you feel angry?"}
+- {"task":"noprocess","term":"Is something making you feel angry?"}
+- {"task":"noprocess","term":"Does using that kind of language make you feel better?"}
+
++ what is your (home|office|cell) phone number
+- {"task":"noprocess","term":"You can call my <star> number at 1 (888) 555-5555."}
+
++ (what is your name|who are you|who is this)
+- {"task":"noprocess","term":"My name is Robin, I'm a AI running on JavaScript!"}
+
++ (happy|merry) (christmas|xmas|valentines day|thanksgiving)
+- {"task":"noprocess","term":"Wow! Is it really <star2> already?"}
+
++ [*]last (message|msg|text|sms)[*]
+- {"task":"lastSMS","term":"SMS"}
+
++ [*](turn|open) (off|on|start|stop) (torch|light|flash|flashlight)[*]
+- {"task":"torch","term":"<star2>"}
+
+
+// Dynamic
+
+
++ [*](his|her|it) (*)
+- {"task":"context","term":"<star1>","context":"<get context>"}
+
++ [*](photos|photo|images|image|photographs|photograph|picture|pictures) of *
+- {"task":"googleimagesearch","term":"<star2>"}
+
++ [*](define|defination of|what is defination of|mean by|meaning of) *
+- {"task":"wordnicksearch","term":"<star2>"}
+
++ [*](whatsapp|whats app|message|text) * to *
+- {"task":"whatsappmsg","term":"<star2>","msg":"<star3>"}
+
++ [*]news (related to|of|about) *
+- {"task":"newssearch","type":"topic","term":"<star2>"}
+
++ [*]news[*]
++ [*]what is happening (outside|today)
+- {"task":"newssearch","type":"normal"}
+
++ [*]weather (in|of|about) *
+- {"task":"weatherreport","term":"<star2>"}
+
++ [*](show me|show|play)[ the] youtube (video|videos) of *
+- {"task":"youtubeSearch","term":"<star3>"}	
+
+
++ (find|search) [nearest|closest] * in *
+- {"task":"mapsearch","term":"<star2>","place":"<star3>"} 
+
++ [*](take|capture) a selfie
+- {"task":"camera","term":"front"}
+
++ [*]take a (photo|image|snap|photograph)
+- {"task":"camera","term":"back"}
+
++ call *
+- {"task":"call","term":"<star1>"}
+
+
+// remember
+
++ [*] remember [that]*
+- {"task":"remember_add","term":"<star1>"}
+
++ [*]where (is|are) [my|mine]*
+- {"task":"remember_search","term":"<star2>"}
+
++ [*]what did i (tell|told|asked|ask) you about [my]*
+- {"task":"remember_search","term":"<star2>"}
+
++ [*]what did i (tell|told|asked|ask) you to remember
+- {"task":"remember_all","term":""}
+
++ [*]what did i told you to remember yesterday
+- {"task":"remember_all_yesterday","term":"<star2>"}
+
++ [*]forget all [of that]
+- {"task":"remember_flush","term":""}
+
+
+
+
+
+
+// PC Control
+
++ [*]start pc file explorer
+- {"task":"pc_file_explorer","start":"1","term":"/home/dsr/"}
+
++ [*](goto|open|go to|browse to|browse) * [folder|directory]
+- {"task":"pc_file_explorer","start":"0","term":"<star2>"}
+
+
+// Default
++ *
+- {"task":"gc_last","term":"<star1>"}
