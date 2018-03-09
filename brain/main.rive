@@ -160,7 +160,7 @@
 + [*]weather (in|of|about) *
 - {"task":"weatherreport","term":"<star2>"}
 
-+ [*](show me|show|play)[ the] youtube (video|videos) of *
++ [*](show me|show|play)[ the] [youtube] (video|videos) of *
 - {"task":"youtubeSearch","term":"<star3>"}	
 
 

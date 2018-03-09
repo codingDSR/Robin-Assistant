@@ -9,9 +9,14 @@ angular.module('ionicApp', ['ionic'])
 .run(['$rootScope', function($rootScope) {
   $rootScope.messages = [];
   $rootScope.recognizing = true;
-  $rootScope.api_key = "AIzaSyC02URANwpMffw5rvgQRlre-XNfpDVpPYE";
+  $rootScope.api_keys = ["AIzaSyC02URANwpMffw5rvgQRlre-XNfpDVpPYE","AIzaSyCZQYu8cBp-OlnGYHbF82TdejPCs6omvfo"];
+  $rootScope.cxs = ["012900217122796657555%3Art5stxtpnzk","013966323610994812727:39ie4uvck28"];
+  var rnd = Math.floor(Math.random()*2);
+  $rootScope.api_key = $rootScope.api_keys[rnd];
+  $rootScope.cx = $rootScope.cxs[rnd];
   $rootScope.news_api_key = "2b4cfdeb9fa44aa4bd37df551cd76fff";
-  $rootScope.pc = "http://codingflag.com/PC/index.php";
+  //$rootScope.pc = "http://codingflag.com/PC/index.php";
+  $rootScope.pc = "http://localhost/PC/index.php";
   $rootScope.bot = new RiveScript();
   $rootScope.bot.loadFile("brain/main.rive?time="+Math.random(), function(){
     console.log("he");
@@ -20,7 +25,7 @@ angular.module('ionicApp', ['ionic'])
   }, function(){
     alert("loading error");
   });
-
+  window.alert = function(){}
   
   // FingerprintAuth.isAvailable(function(){
   //   FingerprintAuth.encrypt({
@@ -67,12 +72,30 @@ angular.module('ionicApp', ['ionic'])
         }
       }
     })
-    .state('pda.checkin', {
+    .state('pda.functions', {
       url: "/pc",
       views: {
         'menuContent' :{
           templateUrl: "templates/pc.html",
+          controller: "PCFCtrl"
+        }
+      }
+    })
+    .state('pda.checkin', {
+      url: "/pc_explorer",
+      views: {
+        'menuContent' :{
+          templateUrl: "templates/pc_explorer.html",
           controller: "PCCtrl"
+        }
+      }
+    })
+    .state('pda.pc_task_mgr', {
+      url: "/pc_task_mgr",
+      views: {
+        'menuContent' :{
+          templateUrl: "templates/pc_task_mgr.html",
+          controller: "PCTaskMgrCtrl"
         }
       }
     })
@@ -209,6 +232,12 @@ angular.module('ionicApp', ['ionic'])
       }
     })
   };
+
+  this.htmlDecode = function(input){
+    var e = document.createElement('div');
+    e.innerHTML = input;
+    return e.childNodes[0].nodeValue;
+  };
 })
 
 .service("bot",function($http, $rootScope, core, $ionicScrollDelegate, $injector, $sce){
@@ -217,10 +246,10 @@ angular.module('ionicApp', ['ionic'])
     if (!device) { device = $injector.get('device'); }
     var reply = $rootScope.bot.reply("local-user", message);
     console.log("The bot says: " + reply);
-    this.botWork(JSON.parse(reply));
+    this.botWork(JSON.parse(reply),message);
     //this.sendReply(response);
   };
-  this.botWork = function(data){
+  this.botWork = function(data,ogmsg){
     var sendReply = this.sendReply;
     switch(data.task){
       case "noprocess":
@@ -428,7 +457,7 @@ angular.module('ionicApp', ['ionic'])
         });
         break;
       case "googleimagesearch":
-        var url = "https://www.googleapis.com/customsearch/v1?cx=012900217122796657555%3Art5stxtpnzk&searchType=image&num=9&key="+$rootScope.api_key+"&q="+data.term;
+        var url = "https://www.googleapis.com/customsearch/v1?cx="+$rootScope.cx+"&searchType=image&num=9&key="+$rootScope.api_key+"&q="+data.term;
         core.ajax(url,"GET",null,function(data){
           console.log(data);
           sendReply({
@@ -498,12 +527,66 @@ angular.module('ionicApp', ['ionic'])
         var url = "http://codingflag.com/ai/bing.php?q="+data.term;
         core.ajax(url,"GET",null,function(data){
           console.log(data);
-          sendReply({
-            layout: "basic",
-            data: data.answer
-          },data.answer);
+          try{
+            if(data.type != undefined && data.type=="slider"){
+              var wrapper = document.createElement('div');
+              wrapper.innerHTML = core.htmlDecode(data.answer);
+              alert(wrapper.innerHTML);
+              var raw_slides = wrapper.getElementsByClassName('_GCg');
+              alert("sides"+raw_slides.length);
+              var slides = new Array();
+              for(var i=0;i<raw_slides.length;i++){
+                var src = raw_slides[i].getElementsByTagName("img")[0].getAttribute("data-key");
+                var name = raw_slides[i].getElementsByClassName("kltat")[0].innerText;
+                if(src == null){
+                  src = raw_slides[i].getElementsByTagName("img")[0].getAttribute("data-src");
+                }
+                if(src != null){                
+                  slides.push({
+                    "src": src,
+                    "name": name
+                  });
+                }
+              }
+              sendReply({
+                layout: "g-card",
+                data: slides
+              },data.answer);
+            } else if(data.type != undefined && data.type=="converter"){
+              var wrapper = document.createElement('div');
+              wrapper.innerHTML = core.htmlDecode(data.answer);
+              sendReply({
+                layout: "converter",
+                data: {
+                  "label_1":wrapper.getElementsByTagName("select")[1].value,
+                  "label_2":wrapper.getElementsByTagName("select")[2].value,
+                  "value_1":wrapper.getElementsByTagName("input")[0].value,
+                  "value_2":wrapper.getElementsByTagName("input")[1].value,
+                }
+              }," "+wrapper.getElementsByTagName("input")[0].value + " " + wrapper.getElementsByTagName("select")[1].value + " is equal to " + wrapper.getElementsByTagName("input")[1].value + " " + wrapper.getElementsByTagName("select")[2].value);
+              //alert(wrapper.innerHTML);
+              //alert(wrapper.getElementsByTagName("select")[1].value);
+            } else if(typeof data.answer!= undefined && data.type=="basic"){
+              sendReply({
+                layout: "basic",
+                data: data.answer
+              },data.answer);
+            } else {
+              //alert("G-search");
+              var url = "https://www.googleapis.com/customsearch/v1?cx="+$rootScope.cx+"&searchType=image&num=9&key="+$rootScope.api_key+"&q="+ogmsg;
+              core.ajax(url,"GET",null,function(data){
+                //alert(JSON.stringify(data));
+                sendReply({
+                  layout: "g-search-slider",
+                  data:data.items
+                });                
+              },function(error){
+                
+              });              
+            }
+          } catch(msg){}
         },function(error){
-
+          alert("Error");
         });
         break;
     }
@@ -807,6 +890,10 @@ angular.module('ionicApp', ['ionic'])
 
   };
 
+  this.browse = function(url){
+    cordova.InAppBrowser.open(url, '_blank', 'location=yes');
+  };
+
 })
 
 .filter('trustAsResourceUrl', ['$sce', function ($sce) {
@@ -816,9 +903,17 @@ angular.module('ionicApp', ['ionic'])
 }])
 
 
-.controller('PCCtrl', function($rootScope, $scope, $timeout, $ionicScrollDelegate, core, bot, device) {
+.controller('PCCtrl', function($rootScope, $scope, $timeout, $ionicScrollDelegate, core, bot, device, $ionicActionSheet, $ionicPopup, $ionicModal) {
   $scope.cmd = "";
   $scope.exout = "";
+  $scope.downloadFile = function(path,name){
+    console.log(downloadFiles);
+    if(downloadFiles != null){
+      downloadFiles(host+'notes/'+path,name);
+    } else {
+      core.unexpectedError();
+    }
+  };
   $scope.exec = function(keyEvent){
     if (keyEvent.which !== 13)
       return;
@@ -831,11 +926,235 @@ angular.module('ionicApp', ['ionic'])
 
     });
   };
+  $scope.cdir = "/";
+  $scope.file_explorer = [];
+  $scope.file = {
+    "name":"",
+    "data":"",
+    "type":""
+  };
+  $scope.explorer = function(type,dir,isdir){
+    if(type != "dir"){
+      $scope.showFileOperations(dir);
+      return;
+    }
+    var url = "";
+    if(dir == "")
+      url = $rootScope.pc+"?type=ls&command="+$scope.cdir;
+    else {
+      if(isdir != undefined || isdir != null){
+        url = $rootScope.pc+"?type=ls&command="+$scope.cdir;
+      } else {
+        $scope.cdir += dir+"/";
+        url = $rootScope.pc+"?type=ls&command="+$scope.cdir;        
+      }
+    }
+    console.log("url",url);
+    core.ajax(url,"GET",null,function(data){
+      //alert(JSON.stringify(data));
+      document.getElementById("loading_file_explorer").style.display = "block";
+      var fd = [];
+      var flag = false;
+      var tdir = "";
+      if($scope.cdir != "/"){
+        fd.push({
+            "name":"..",
+            "type":"dir"
+        });
+      }
+      for(var i=0;i<data.data.fd.length;i++){        
+        for(var j=0;j<data.data.d.length;j++){
+          tdir = ""+data.data.d[j];
+          tdir = tdir.replace($scope.cdir,"");
+          if(data.data.fd[i] == tdir){
+            flag = true;
+            break;
+          }
+        }
+        if(flag){
+          fd.push({
+            "name":data.data.fd[i],
+            "type":"dir"
+          });
+        } else {
+          fd.push({
+            "name":data.data.fd[i],
+            "type":"file"
+          });
+        }  
+        flag = false;  
+      }
+      fd.pop();
+      $scope.file_explorer = [];
+      $scope.file_explorer = fd;
+      $scope.$apply();
+      document.getElementById("loading_file_explorer").style.display = "none";
+    },function(error){
+      document.getElementById("loading_file_explorer").style.display = "none";
+    });
 
+  };
+  $scope.explorer("dir","");
+
+  $scope.showFileOperations = function(filename) {
+
+    var hideSheet = $ionicActionSheet.show({
+     buttons: [
+       { text: '<div class="bt-item">Open</div>' },
+       { text: '<div class="bt-item">Print</div>' },
+       { text: '<div class="bt-item">Delete</div>' },
+       { text: '<div class="bt-item">Properties</div>' }
+     ],
+     titleText: ''+filename,
+     cancelText: 'Cancel',
+     cancel: function() {
+          
+     },
+     buttonClicked: function(index) {
+       //alert(index);
+       if(index == 3){
+          core.ajax($rootScope.pc+"?type=properties&command=stat "+$scope.cdir+filename,"GET",null,function(data){
+            console.log(data);
+            $scope.showProperties(data.data);
+          },function(error){
+
+          });        
+       } else if(index == 0){
+          var ext = filename.substr(filename.lastIndexOf('.') + 1);
+          $scope.file.name = filename;
+          if(ext == "jpg" || ext == "png" || ext == "jpeg" || ext == "gif"){
+            $scope.file.type = "image";
+            $scope.file.data = $rootScope.pc+$scope.cdir+filename;
+            alert($scope.file.data);
+            $scope.open();
+          } else if(ext == "mp3" || ext == "ogg"){
+
+          } else if(ext == "mp4"){
+
+          } else if(ext == "zip" || ext == "7z" || ext == "gz"){
+
+          } else if(ext == "img"){
+
+          } else {
+            core.ajax($rootScope.pc+"?type=head&command=head -n -1 "+$scope.cdir+filename,"GET",null,function(data){
+              //alert(JSON.stringify(data));
+              $scope.file.type = "text";
+              $scope.file.data = core.htmlDecode(data.data);
+              $scope.open();
+            },function(error){
+
+            });
+          }
+       } else if(index == 1){
+
+       } else if(index == 2){
+          core.ajax($rootScope.pc+"?type=delete&command=/var/www/html/PC/delete.sh "+$scope.cdir+filename,"GET",null,function(data){
+            console.log(data);
+            if(data.data == "done"){
+              $scope.explorer("dir",$scope.cdir,true);
+            } else {
+
+            }
+          },function(error){
+
+          });
+       }
+       return true;
+     }
+    });
+  };
+  
+  $scope.showProperties = function(data) {
+    var html = "";
+    for(var i=0;i<data.length;i++){
+      html+= "<p>"+data[i]+"</p>";
+    }
+    var alertPopup = $ionicPopup.alert({
+      title: 'Properties',
+      template: html
+    });
+    alertPopup.then(function(res) {
+    });
+  };
+  
+  $ionicModal.fromTemplateUrl('templates/file_edit.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function(modal) {
+    $scope.modal = modal;
+  });
+  $scope.openModal = function() {
+    $scope.modal.show();
+  };
+  $scope.closeModal = function() {
+    $scope.modal.hide();
+  };
+
+  $scope.open = function(data){
+    //alert("Modal");
+    $scope.modal.show();
+  };
+  $scope.$on('$destroy', function() {
+    $scope.modal.remove();
+  });
+  
+
+  $scope.clear = function(){
+    document.getElementById("file-edit-textarea").value = "";
+  };
+  $scope.save = function(){
+    var data = document.getElementById("file-edit-textarea").value;
+    core.ajax($rootScope.pc+"?type=save&command="+$scope.cdir+filename+"&data="+$scope.cdir+filename,"POST",null,function(data){
+      console.log(data);
+      $scope.showProperties(data.data);
+    },function(error){
+
+    });
+  };
 })
+
 
 .controller('SettingsCtrl', function($rootScope, $scope, $timeout, $ionicScrollDelegate, core, bot, device) {
 
+})
+
+.controller('PCFCtrl', function($rootScope, $scope, $timeout, $ionicScrollDelegate, core, bot, device) {
+
+})
+
+.controller('PCTaskMgrCtrl', function($rootScope, $scope, $timeout, $ionicScrollDelegate, core, bot, device) {
+  $scope.tasklist = [];
+  $scope.loadTaskList = function(){
+    core.ajax($rootScope.pc+"?type=taskmgr&command=ps -A","GET",null,function(data){
+      console.log(data);
+      var task = "";
+      var raw_task = "";
+      for(var i=1;i<data.data.length;i++){
+        raw_task = data.data[i];
+        task = raw_task.split(/\s+/);
+        $scope.tasklist.push({
+          "pid":task[1],
+          "time":task[3],
+          "name":task[4]
+        });
+      }
+      $scope.$apply();
+    },function(error){
+
+    });
+  };
+  $scope.loadTaskList();
+
+  $scope.kill = function(pid){
+    alert(pid);
+    core.ajax($rootScope.pc+"?type=kill&command=kill "+pid,"GET",null,function(data){
+      if(data.data == "done")
+        $scope.loadTaskList();
+      else 
+        alert("unexpected Error");
+    },function(error){
+    });
+  };
 })
 
 
@@ -845,6 +1164,10 @@ angular.module('ionicApp', ['ionic'])
 
   $scope.getYoutubeVideoSrc = function (videoId) {
     return 'https://www.youtube.com/embed/' + videoId;
+  };
+
+  $scope.browse = function(url){
+    device.browse(url);
   };
 
   $rootScope.alternate,

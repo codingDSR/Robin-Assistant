@@ -57,4 +57,5 @@
     <plugin name="cordova-plugin-brightness" spec="^0.1.5" />
     <plugin name="cordova-plugin-geolocation" spec="^2.4.3" />
     <plugin name="cordova-plugin-contacts" spec="~2.3.1" />
+    <plugin name="cordova-plugin-inappbrowser" spec="~2.0.1" />
 </widget>

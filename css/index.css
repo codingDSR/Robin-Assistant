@@ -134,16 +134,19 @@
 .slider-slides {
   height: auto !important;
 }
-.bar.bar-header {
+/*.bar.bar-header {
   height: 50px;
 }
+.title.header-item {
+  line-height: 60px;
+}
 .bar.bar-header > h1 {
-  height: 50px;
-  line-height: 65px !important;
+  height: 55px;
+  line-height: 95px !important;
 }
 .has-header {
   top:50px;
-}
+}*/
 .messages {
   padding-top: 0px !important;
 }
@@ -194,22 +197,58 @@
 }
 
 
+.slidebox-g {
+  margin:20px 0px 10px;
+}
+.conveter {
+  margin-top:12px;
+  border:1px solid #ddd;
+  text-align: center;
+  background: #fafafa;
+}
+.converter label {
+  color:#444;
+}
+.conveter input {
+  margin-top: 6px;
+  width: 100%;
+  text-align: center;
+  font-size: 19px;
+  background: #fff;
+  border:1px solid #eee;
+}
 
-/*******tic-tac-toe******/
-#tic-tac-toe .disable {text-transform:uppercase; font-size:30px; font-family:Georgia, "Times New Roman", Times, serif}
-#tic-tac-toe #game li {float:left; padding:0; list-style:none; text-align:center; margin-bottom:20px; color:#fff; height:60px; line-height:60px; font-size:40px; color:#ccc}
-#tic-tac-toe #game li.disable{color:#fff}
-#tic-tac-toe #game {float:left; padding:0; clear:both}
-.new_span {width:226px}
-#tic-tac-toe #reset { padding:5px 10px; color:#fff; font-family:Arial, Helvetica, sans-serif; font-size:20px; clear:both; cursor:pointer; float:left; text-align:center; text-transform:uppercase; outline:none; width:204px}
-.input-prepend span.pre_text {width:55px}
-.input-prepend .span1{width:93px}
-.input-prepend {margin-bottom:10px}
-.clr {clear:both; height:0}
-#tic-tac-toe h1 {text-align:center; font-size:28px}
-#tic-tac-toe li::-moz-selection {background:none;color:#000;}
-#tic-tac-toe li::-webkit-selection {background:none;color:#000;}
-#tic-tac-toe {width:220px; margin:0 auto}
-.input-append .win_times {background:#fff; width:101px}
-.input-append .win_text {width:52px}
-/*******tic-tac-toe END******/
+.loading {
+  position: fixed;
+  top:0px;
+  left: 0px;
+  right: 0px;
+  height: calc(100vh - 1px);
+  background: rgba(0,0,0,0.32);
+  z-index: 100000;
+}
+.bt-item {
+  border-bottom: 1px solid #ccc;
+  padding: 3px 12px;
+  font-size: 15px;
+}
+.file-edit-menu {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  line-height: 50px;
+}
+.file-edit-menu >div {
+  width: 100%;
+  background: #3399ff;
+  color: #eee;
+  border-right:1px solid #eee; 
+  height: 90%;
+}
+.file-edit-textarea {
+  width: 100%;
+  height: calc(100vh - 105px);
+  border:none;
+}

@@ -42,6 +42,7 @@
               <a href="#/pda/home" class="item" menu-close>Home</a>
               <a href="#/pda/pc" class="item" menu-close>PC Control</a>
               <a href="#/pda/settings" class="item" menu-close>Settings</a>
+              <a href="#/pda/help" class="item" menu-close>Help</a>
             </ul>
           </ion-content>
         </ion-side-menu>
@@ -107,11 +108,34 @@
               </ion-slide>
             </ion-slide-box>
 
+            <ion-slide-box ng-if="message.layout == 'g-search-slider'" class="message sp">
+              <ion-slide ng-repeat="result in message.data">
+                <div class="box">
+                  <div class="list card" ng-click="browse('{{result.image.contextLink}}')">
+                    <div class="item" style="background:#333;color:#fdfdfd;white-space: initial;">{{result.title}}</div>
+                    <div class="item item-body">
+                      {{result.snippet}}
+                    </div>
+                  </div>
+                </div>
+              </ion-slide>
+            </ion-slide-box>
+
 
             <ion-slide-box ng-if="message.layout == 'youtubevideos'" class="message ytsnippet sp">
               <ion-slide ng-repeat="vd in message.data.items">
                 <div class="box">
                   <iframe style="width:100%;height: 85%;" src="{{vd.id.videoId}}" allowfullscreen></iframe>
+                </div>
+              </ion-slide>
+            </ion-slide-box>
+
+
+            <ion-slide-box ng-if="message.layout == 'g-card'" class="message sp slidebox-g">
+              <ion-slide ng-repeat="slide in message.data">
+                <div class="box" style="text-align: center;">
+                  <img src="{{slide.src}}"/>
+                  <p style="margin-top: 10px;">{{slide.name}}</p>
                 </div>
               </ion-slide>
             </ion-slide-box>
@@ -142,6 +166,21 @@
               </div>
             </div>
 
+            <div ng-if="message.layout == 'converter'" class="message sp">
+              <div class="padding">
+                <div class="row conveter">
+                    <div class="col">
+                      <label>{{message.data.label_1}}</label>
+                      <input type="number" value="{{message.data.value_1}}" readonly>
+                    </div>
+                    <div class="col">
+                      <label>{{message.data.label_2}}</label>
+                      <input type="number" value="{{message.data.value_2}}" readonly>
+                    </div>
+                </div>
+              </div>
+            </div>
+
             <div ng-if="message.layout == 'pc_list_dir'" class="message sp">
               <div class="list card directories">
                 <a href="#" ng-repeat="dir in message.data.data.directories" ng-if="dir.length >0" class="item item-icon-left">
@@ -151,7 +190,11 @@
               </div>
             </div>
         </div>
+
+
         <div id="timer" class="hide"></div>
+
+
       </ion-content>
 
       <ion-footer-bar keyboard-attach class="bar-stable item-input-inset">
@@ -168,29 +211,44 @@
     </ion-pane>
     </script>
 
-    <script id="templates/pc.html" type="text/ng-template">
-       <ion-pane style="margin-top:10px" class="messaging-view">
-       <ion-view view-title="PC Control">
-        <ion-content style="top:30px;">
-          <div class="list list-inset">
-            <label class="item item-input">
-              <input type="text" ng-keypress="exec($event)" placeholder="Command">
-            </label>
-          </div>
+    <script id="templates/pc_explorer.html" type="text/ng-template">
+       <ion-pane class="messaging-view">
+          <ion-view view-title="PC Control">
+            <ion-content style="top:30px;">
+              <div class="list list-inset" style="display:none;">
+                <label class="item item-input">
+                  <input type="text" ng-keypress="exec($event)" placeholder="Command">
+                </label>
+              </div>
 
-          <div class="card">
-            <div class="item item-text-wrap" id="Output">
-              {{exout}}
-            </div>
-          </div>
-        </ion-content>
-      </ion-view>
-    </ion-pane>
+              <div class="card" style="display:none;">
+                <div class="item item-text-wrap" id="Output">
+                  {{exout}}
+                </div>
+              </div>
+              <div class="loading" id="loading_file_explorer"></div>
+              <div class="list">
+                <div class="item item item-icon-left" ng-repeat="fd in file_explorer" 
+                  ng-click="explorer('{{fd.type}}','{{fd.name}}')">
+                  <div ng-if="fd.type=='dir'">
+                    <i class="icon ion-ios-folder-outline"></i>
+                    {{fd.name}}
+                  </div>
+                  <div ng-if="fd.type=='file'">
+                    <i class="icon ion-document"></i>
+                    {{fd.name}}
+                  </div>
+                </div>
+              </div>
+
+            </ion-content>
+        </ion-view>
+      </ion-pane>
     </script>
 
     <script id="templates/settings.html" type="text/ng-template">
-       <ion-pane style="margin-top:10px" class="messaging-view">
-       <ion-view view-title="Settings" style="top:15px;">
+       <ion-pane class="messaging-view">
+       <ion-view view-title="Settings">
         <ion-content >
           <ul class="list">
             <li class="item item-toggle">
@@ -206,6 +264,67 @@
         </ion-content>
       </ion-view>
     </ion-pane>
+    </script>
+
+    <script id="templates/pc.html" type="text/ng-template">
+       <ion-pane class="messaging-view">
+       <ion-view view-title="PC Functions">
+        <ion-content >
+            <div class="list">
+              <a class="item" href="#/pda/pc_explorer">PC File Explorer</a>
+              <a class="item" href="#/pda/pc_task_mgr">Task Manager</a>
+            </div>
+        </ion-content>
+      </ion-view>
+    </ion-pane>
+    </script>
+
+
+    <script id="templates/pc_task_mgr.html" type="text/ng-template">
+      <ion-pane class="messaging-view">
+       <ion-view view-title="Task Manager">
+          <ion-content >
+            <div class="list list-inset" ng-show="tasklist.length > 0">
+              <label class="item item-input">
+                <i class="icon ion-search placeholder-icon"></i>
+                <input type="text" ng-model="search.$" placeholder="Search">
+              </label>
+            </div>
+            <div class="list">
+
+              <div class="item item-button-right" ng-repeat="task in tasklist | filter:search:strict">
+                {{task.name}} | <small>{{task.time}}</small>
+                <button class="button button-assertive" ng-click="kill('{{task.pid}}')">
+                  <i class="icon ion-ios-minus"></i>
+                </button>
+              </div>
+            </div>
+          </ion-content>
+        </ion-view>
+      </ion-pane>
+    </script>
+
+
+
+    <script id="templates/file_edit.html" type="text/ng-template">
+      <ion-modal-view>
+        <ion-header-bar class="bar bar-header bar-positive">
+          <h1 class="title">{{file.name}}</h1>
+          <button class="button button-clear button-primary" ng-click="closeModal()">Close</button>
+        </ion-header-bar>
+        <ion-content class="padding">
+          <div ng-if="file.type=='text'">
+            <div class="file-edit-menu">
+              <div class="btn" ng-click="save()"><i class="icon ion-document-text"></i> Save</div>
+              <div class="btn" ng-click="clear()"><i class="icon ion-trash-a"></i> Erase</div>
+            </div>
+            <textarea class="file-edit-textarea" id="file-edit-textarea">{{file.data}}</textarea>
+          </div>
+          <div ng-if="file.type=='image'">
+            <img src="{{file.data}}">
+          </div>
+        </ion-content>
+      </ion-modal-view>
     </script>
 
 
